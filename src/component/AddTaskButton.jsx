@@ -1,9 +1,11 @@
-import { useContext } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { TODO_LIST } from '../assets/assets.env';
-import { AppContext } from '../assets/context';
+import { selectInProcess } from '../selectors/selectors';
+import { NEED_RELOAD, SET_IN_PROCESS } from '../constants';
 
 export const AddTaskButton = () => {
-	const { inProcess, setInProcess, makeRefresh } = useContext(AppContext);
+	const dispatch = useDispatch();
+	const inProcess = useSelector(selectInProcess);
 
 	const onAddTask = () => {
 		const taskName = prompt('Введите наименование задачи');
@@ -13,6 +15,7 @@ export const AddTaskButton = () => {
 			return;
 		}
 
+		dispatch({ type: SET_IN_PROCESS, payload: true });
 		fetch(TODO_LIST, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json;charset=utf-8' },
@@ -24,10 +27,10 @@ export const AddTaskButton = () => {
 			.then((rawResponse) => rawResponse.json())
 			.then((response) => {
 				console.log('Задача добавлена', response);
-				makeRefresh();
+				dispatch({ type: NEED_RELOAD });
 			})
 			.catch((error) => console.log('Ошибка добавления данных:', error))
-			.finally(() => setInProcess(false));
+			.finally(() => dispatch({ type: SET_IN_PROCESS, payload: false }));
 	};
 
 	return (
